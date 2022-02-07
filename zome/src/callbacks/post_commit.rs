@@ -43,7 +43,7 @@ fn post_commit_app(_eh: EntryHash, app_type: AppEntryType) -> ExternResult<()> {
    debug!("  - post_commit_app() {:?}",  app_type);
    match app_type.id().into() {
       0 => {
-         debug!("post_commit() of Handle ; remoting call to create random number");
+         debug!("post_commit() of Handle ; remoting call with call_remote()");
          let res = call_remote(
             agent_info()?.agent_latest_pubkey,
             zome_info()?.name,
@@ -53,7 +53,18 @@ fn post_commit_app(_eh: EntryHash, app_type: AppEntryType) -> ExternResult<()> {
          )?;
          debug!("post_commit() of Handle ; res = {:?}", res);
       }
-      1 => {debug!(" post_commit() of Number"); }
+      1 => {
+         debug!("post_commit() of Real ; remoting call with call()");
+         let res = call(
+            CallTargetCell::Local,
+            zome_info()?.name,
+            "set_number".to_string().into(),
+            None,
+            24,
+         )?;
+         debug!("post_commit() of Real ; res = {:?}", res);
+      }
+      2 => {debug!(" post_commit() of Number"); }
       _ => {debug!(" !!! unknown entry index: {:?}", app_type.id()); }
    }
    // Done

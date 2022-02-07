@@ -5,17 +5,13 @@
 #![allow(unused_attributes)]
 
 pub mod callbacks;
-pub mod handle;
+pub mod entries;
 
 use hdk::prelude::*;
-use crate::handle::*;
+use crate::entries::*;
 
 //----------------------------------------------------------------------------------------
 
-entry_defs![
-   Handle::entry_def(),
-   Number::entry_def()
-];
 
 
 /// Zome Function
@@ -24,18 +20,30 @@ pub fn set_handle(new_name: String) -> ExternResult<HeaderHash> {
    let new_handle = Handle::new(new_name.to_string());
    let _new_handle_eh = hash_entry(&new_handle)?;
    let hh = create_entry(&new_handle)?;
-   debug!("new handle hh = {:?}", hh);
+   debug!("new Handle hh = {:?}", hh);
    return Ok(hh);
 }
 
 /// Zome Function
 #[hdk_extern]
-pub fn set_number(number: u32) -> ExternResult<HeaderHash> {
+pub fn set_number(value: u32) -> ExternResult<HeaderHash> {
    let number = Number {
-      value: number,
+      value,
    };
    let _eh = hash_entry(&number)?;
    let hh = create_entry(&number)?;
-   debug!("new number hh = {:?}", hh);
+   debug!("new Number hh = {:?}", hh);
+   return Ok(hh);
+}
+
+/// Zome Function
+#[hdk_extern]
+pub fn set_real(value: f32) -> ExternResult<HeaderHash> {
+   let real = Real {
+      value,
+   };
+   let _eh = hash_entry(&real)?;
+   let hh = create_entry(&real)?;
+   debug!("new Real hh = {:?}", hh);
    return Ok(hh);
 }

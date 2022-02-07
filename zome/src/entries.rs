@@ -1,14 +1,26 @@
 use hdk::prelude::*;
 
 
-/// Entry representing the username of an Agent
+entry_defs![
+   Handle::entry_def(),
+   Real::entry_def(),
+   Number::entry_def()
+];
+
 #[hdk_entry(id = "Number", visibility = "public")]
 #[derive(Clone, PartialEq)]
 pub struct Number {
     pub value: u32,
 }
 
-/// Entry representing the username of an Agent
+
+#[hdk_entry(id = "Real", visibility = "public")]
+#[derive(Clone, PartialEq)]
+pub struct Real {
+    pub value: f32,
+}
+
+
 #[hdk_entry(id = "Handle", visibility = "public")]
 #[derive(Clone, PartialEq)]
 pub struct Handle {

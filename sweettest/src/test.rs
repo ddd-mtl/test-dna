@@ -20,8 +20,12 @@ pub async fn test(arg: String) {
       test_list_apps().await;
    }
    // Handle
-   if arg == "all" || arg == "handle" {
+   if arg == "all" || arg == "call_remote" {
       test_handle().await;
+   }
+   // Real
+   if arg == "all" || arg == "call" {
+      test_real().await;
    }
 
    // Print elapsed
@@ -50,6 +54,32 @@ pub async fn test_handle() {
    let name = "alex";
    println!("*** Calling set_handle()");
    let handle_address1: HeaderHash = conductor.call(&cell1.zome("testground"), "set_handle", name.to_string()).await;
+   println!("handle_address1: {:?}", handle_address1);
+
+   print_chain(&conductor, &alex, &cell1).await;
+
+   /// need a sleep before shutdown otherwise post_commit() will return with
+   /// `NetworkError("Other: GhostActorDisconnected")`
+   sleep(Duration::from_millis(500)).await;
+
+   print_chain(&conductor, &alex, &cell1).await;
+
+   /// Shutdown will not wait for post_commit() to finish :(
+   conductor.shutdown().await;
+}
+
+
+///
+pub async fn test_real() {
+   let now = SystemTime::now();
+   let (mut conductor, alex, cell1) = setup_1_conductor().await;
+
+   if let Ok(elapsed) = now.elapsed() {
+      println!("\n *** Setup duration: {} secs\n\n", elapsed.as_secs());
+   }
+
+   println!("*** Calling set_real()");
+   let handle_address1: HeaderHash = conductor.call(&cell1.zome("testground"), "set_real", 42.0).await;
    println!("handle_address1: {:?}", handle_address1);
 
    print_chain(&conductor, &alex, &cell1).await;
