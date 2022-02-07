@@ -1,0 +1,8 @@
+---
+manifest_version: "1"
+name: testground-dna
+uuid: ~
+properties: ~
+zomes:
+  - name: testground
+    bundled: ../target/wasm32-unknown-unknown/release/testground.wasm
