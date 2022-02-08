@@ -27,6 +27,10 @@ pub async fn test(arg: String) {
    if arg == "all" || arg == "call" {
       test_real().await;
    }
+   // Thing
+   if arg == "all" || arg == "link" {
+      test_link().await;
+   }
 
    // Print elapsed
    match now.elapsed() {
@@ -39,6 +43,32 @@ pub async fn test(arg: String) {
          println!("Error: {:?}", e);
       }
    }
+}
+
+
+///
+pub async fn test_link() {
+   let now = SystemTime::now();
+   let (mut conductor, alex, cell1) = setup_1_conductor().await;
+
+   if let Ok(elapsed) = now.elapsed() {
+      println!("\n *** Setup duration: {} secs\n\n", elapsed.as_secs());
+   }
+
+   println!("*** Calling set_handle()");
+   let handle_address1: HeaderHash = conductor.call(&cell1.zome("testground"), "set_thing", 33).await;
+   println!("handle_address1: {:?}", handle_address1);
+
+   print_chain(&conductor, &alex, &cell1).await;
+
+   /// need a sleep before shutdown otherwise post_commit() will return with
+   /// `NetworkError("Other: GhostActorDisconnected")`
+   sleep(Duration::from_millis(20 * 1000)).await;
+
+   print_chain(&conductor, &alex, &cell1).await;
+
+   /// Shutdown will not wait for post_commit() to finish :(
+   conductor.shutdown().await;
 }
 
 

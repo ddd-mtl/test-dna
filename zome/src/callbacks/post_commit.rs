@@ -39,7 +39,7 @@ fn post_commit(signedHeaderList: Vec<SignedHeaderHashed>) {
 /**
  *
  */
-fn post_commit_app(_eh: EntryHash, app_type: AppEntryType) -> ExternResult<()> {
+fn post_commit_app(eh: EntryHash, app_type: AppEntryType) -> ExternResult<()> {
    debug!("  - post_commit_app() {:?}",  app_type);
    match app_type.id().into() {
       0 => {
@@ -65,9 +65,40 @@ fn post_commit_app(_eh: EntryHash, app_type: AppEntryType) -> ExternResult<()> {
          debug!("post_commit() of Real ; res = {:?}", res);
       }
       2 => {debug!(" post_commit() of Number"); }
+      3 => {
+         debug!(" post_commit() of Thing");
+         let payload = CommitLinkInput {
+            eh,
+            to: agent_info()?.agent_latest_pubkey,
+         };
+         let response = call_remote(
+            agent_info()?.agent_latest_pubkey,
+            zome_info()?.name,
+            "commit_link".to_string().into(),
+            None,
+            payload,
+         )?;
+         debug!("commit_link() response: {:?}", response);
+      }
       _ => {debug!(" !!! unknown entry index: {:?}", app_type.id()); }
    }
    // Done
    Ok(())
 }
 
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+struct CommitLinkInput {
+   pub eh: EntryHash,
+   pub to: AgentPubKey,
+}
+
+/// Create & Commit 'Sent' link
+/// Return HeaderHash of newly created link
+#[hdk_extern]
+fn commit_link(input: CommitLinkInput) -> ExternResult<HeaderHash> {
+   debug!("commit_link(): {:?} ", input);
+   let tag = LinkTag::new([]);
+   let hh = create_link(input.eh.clone(), input.eh, tag)?;
+   Ok(hh)
+}

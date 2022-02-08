@@ -47,3 +47,15 @@ pub fn set_real(value: f32) -> ExternResult<HeaderHash> {
    debug!("new Real hh = {:?}", hh);
    return Ok(hh);
 }
+
+/// Zome Function
+#[hdk_extern]
+pub fn set_thing(value: u32) -> ExternResult<HeaderHash> {
+   let number = Thing {
+      value,
+   };
+   let _eh = hash_entry(&number)?;
+   let hh = create_entry(&number)?;
+   debug!("new Thing hh = {:?}", hh);
+   return Ok(hh);
+}
