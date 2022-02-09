@@ -4,9 +4,10 @@ use hdk::prelude::*;
 entry_defs![
    Handle::entry_def(),
    Real::entry_def(),
-    Number::entry_def(),
+   Number::entry_def(),
    Thing::entry_def()
 ];
+
 
 #[hdk_entry(id = "Thing", visibility = "private")]
 #[derive(Clone, PartialEq)]
@@ -14,7 +15,7 @@ pub struct Thing {
     pub value: u32,
 }
 
-#[hdk_entry(id = "Number", visibility = "private")]
+#[hdk_entry(id = "Number", visibility = "public")]
 #[derive(Clone, PartialEq)]
 pub struct Number {
     pub value: u32,

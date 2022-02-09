@@ -6,6 +6,8 @@ use holochain::conductor::{
 use maplit::hashset;
 use tokio::time::{sleep, Duration};
 use holo_hash::*;
+use testground::CommitLinkInput;
+//use serde_json::map::Entry;
 
 use crate::setup::*;
 
@@ -19,17 +21,17 @@ pub async fn test(arg: String) {
    if arg == "" {
       test_list_apps().await;
    }
-   // Handle
    if arg == "all" || arg == "call_remote" {
-      test_handle().await;
+      test_call_remote().await;
    }
-   // Real
    if arg == "all" || arg == "call" {
-      test_real().await;
+      test_call().await;
    }
-   // Thing
    if arg == "all" || arg == "link" {
       test_link().await;
+   }
+   if arg == "all" || arg == "link-direct" {
+      test_list_direct().await;
    }
 
    // Print elapsed
@@ -56,8 +58,8 @@ pub async fn test_link() {
    }
 
    println!("*** Calling set_handle()");
-   let handle_address1: HeaderHash = conductor.call(&cell1.zome("testground"), "set_thing", 33).await;
-   println!("handle_address1: {:?}", handle_address1);
+   let hash: EntryHash = conductor.call(&cell1.zome("testground"), "set_thing", 33).await;
+   println!("hash: {:?}", hash);
 
    print_chain(&conductor, &alex, &cell1).await;
 
@@ -72,8 +74,8 @@ pub async fn test_link() {
 }
 
 
-///
-pub async fn test_handle() {
+/// by creating a Handle entry
+pub async fn test_call_remote() {
    let now = SystemTime::now();
    let (mut conductor, alex, cell1) = setup_1_conductor().await;
 
@@ -83,8 +85,8 @@ pub async fn test_handle() {
 
    let name = "alex";
    println!("*** Calling set_handle()");
-   let handle_address1: HeaderHash = conductor.call(&cell1.zome("testground"), "set_handle", name.to_string()).await;
-   println!("handle_address1: {:?}", handle_address1);
+   let hash: EntryHash = conductor.call(&cell1.zome("testground"), "set_handle", name.to_string()).await;
+   println!("handle_address1: {:?}", hash);
 
    print_chain(&conductor, &alex, &cell1).await;
 
@@ -98,9 +100,42 @@ pub async fn test_handle() {
    conductor.shutdown().await;
 }
 
+/// Check if linking to private entry works (no post_commit)
+pub async fn test_list_direct() {
+   let now = SystemTime::now();
+   let (mut conductor, alex, cell1) = setup_1_conductor().await;
+
+   if let Ok(elapsed) = now.elapsed() {
+      println!("\n *** Setup duration: {} secs\n\n", elapsed.as_secs());
+   }
+
+   println!("*** Calling set_number()");
+   let first: EntryHash = conductor.call(&cell1.zome("testground"), "set_number", 111).await;
+   println!("first: {:?}", first);
+
+   println!("*** Calling set_handle()");
+   let second: EntryHash = conductor.call(&cell1.zome("testground"), "set_handle", "bob".to_string()).await;
+   println!("second: {:?}", second);
+
+   let input = CommitLinkInput {
+      base: first.clone(),
+      target: second.clone(),
+   };
+   println!("*** Calling commit_link()");
+   let hh: HeaderHash = conductor.call(&cell1.zome("testground"), "commit_link", input).await;
+   println!("hh: {:?}", hh);
+
+
+   print_chain(&conductor, &alex, &cell1).await;
+
+
+   /// Shutdown will not wait for post_commit() to finish :(
+   conductor.shutdown().await;
+}
+
 
 ///
-pub async fn test_real() {
+pub async fn test_call() {
    let now = SystemTime::now();
    let (mut conductor, alex, cell1) = setup_1_conductor().await;
 

@@ -1,6 +1,6 @@
 use hdk::prelude::*;
 
-//use crate::strum::AsStaticRef;
+use crate::CommitLinkInput;
 
 /// Zome Callback
 #[hdk_extern(infallible)]
@@ -68,8 +68,8 @@ fn post_commit_app(eh: EntryHash, app_type: AppEntryType) -> ExternResult<()> {
       3 => {
          debug!(" post_commit() of Thing");
          let payload = CommitLinkInput {
-            eh,
-            to: agent_info()?.agent_latest_pubkey,
+            base: eh.clone(),
+            target: eh.clone(),
          };
          let response = call_remote(
             agent_info()?.agent_latest_pubkey,
@@ -84,21 +84,4 @@ fn post_commit_app(eh: EntryHash, app_type: AppEntryType) -> ExternResult<()> {
    }
    // Done
    Ok(())
-}
-
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-struct CommitLinkInput {
-   pub eh: EntryHash,
-   pub to: AgentPubKey,
-}
-
-/// Create & Commit 'Sent' link
-/// Return HeaderHash of newly created link
-#[hdk_extern]
-fn commit_link(input: CommitLinkInput) -> ExternResult<HeaderHash> {
-   debug!("commit_link(): {:?} ", input);
-   let tag = LinkTag::new([]);
-   let hh = create_link(input.eh.clone(), input.eh, tag)?;
-   Ok(hh)
 }
